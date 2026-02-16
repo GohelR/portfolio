@@ -31,10 +31,11 @@ h3 {
   position: fixed;
   inset: 0;
   z-index: 0;
-  background: radial-gradient(circle at 15% 20%, rgba(56, 189, 248, 0.2), transparent 35%),
-    radial-gradient(circle at 85% 15%, rgba(129, 140, 248, 0.25), transparent 35%),
-    radial-gradient(circle at 50% 85%, rgba(168, 85, 247, 0.2), transparent 35%);
-  filter: blur(0px);
+  background:
+    radial-gradient(circle at 15% 20%, rgba(56, 189, 248, 0.24), transparent 35%),
+    radial-gradient(circle at 85% 15%, rgba(129, 140, 248, 0.28), transparent 35%),
+    radial-gradient(circle at 50% 85%, rgba(168, 85, 247, 0.24), transparent 35%),
+    linear-gradient(120deg, rgba(2, 6, 23, 0.95), rgba(7, 9, 30, 0.95));
   animation: meshMotion 18s ease-in-out infinite alternate;
 }
 
@@ -57,7 +58,7 @@ h3 {
   background: linear-gradient(120deg, rgba(56, 189, 248, 0.35), rgba(99, 102, 241, 0.25), rgba(168, 85, 247, 0.35));
   z-index: -1;
   opacity: 0;
-  transition: opacity 0.4s ease;
+  transition: opacity 0.35s ease;
 }
 
 .glow-border:hover::before {
@@ -68,8 +69,8 @@ h3 {
   border-radius: 9999px;
   background: linear-gradient(110deg, #22d3ee, #818cf8, #c084fc, #22d3ee);
   background-size: 220% 220%;
-  animation: spinRing 8s linear infinite;
-  box-shadow: 0 0 30px rgba(56, 189, 248, 0.35);
+  animation: spinRing 7s linear infinite;
+  box-shadow: 0 0 45px rgba(56, 189, 248, 0.35);
 }
 
 .hero-gradient-text,
@@ -114,6 +115,33 @@ h3 {
   backdrop-filter: blur(12px);
 }
 
+.energy-button {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(110deg, #06b6d4, #6366f1, #a855f7);
+}
+
+.energy-button::after {
+  content: '';
+  position: absolute;
+  inset: -45%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 65%);
+  transform: translateX(-65%) rotate(8deg);
+  transition: transform 0.55s ease;
+}
+
+.energy-button:hover::after {
+  transform: translateX(42%) rotate(8deg);
+}
+
+.particle-dot {
+  position: absolute;
+  border-radius: 9999px;
+  background: rgba(103, 232, 249, 0.45);
+  box-shadow: 0 0 18px rgba(34, 211, 238, 0.25);
+  animation: dotFloat linear infinite;
+}
+
 @keyframes meshMotion {
   0% {
     transform: translate3d(0, 0, 0) scale(1);
@@ -138,8 +166,115 @@ h3 {
   }
 }
 
+@keyframes dotFloat {
+  0% {
+    transform: translateY(0px);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(-140px);
+    opacity: 0;
+  }
+}
+
 @media (max-width: 768px) {
   body {
     cursor: auto;
+  }
+}
+
+.loading-ring {
+  animation: spin 3.2s linear infinite;
+}
+
+.loader-text {
+  animation: pulseText 1.2s ease-in-out infinite alternate;
+  letter-spacing: 0.42em;
+}
+
+.section-entrance {
+  animation: sectionIn 0.8s ease-out both;
+}
+
+.project-card {
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+  transform-style: preserve-3d;
+}
+
+.project-card:hover {
+  transform: perspective(1000px) rotateX(6deg) rotateY(-6deg) translateY(-8px);
+  box-shadow: 0 18px 40px rgba(6, 182, 212, 0.2);
+}
+
+.repo-card {
+  transition: transform 0.3s ease;
+}
+
+.repo-card:hover {
+  transform: translateY(-4px);
+}
+
+.skill-fill {
+  animation: skillGrow 1.1s ease-out;
+}
+
+.particle-rise {
+  animation-name: rise;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulseText {
+  from {
+    opacity: 0.5;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes rise {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(-115vh);
+    opacity: 0;
+  }
+}
+
+@keyframes sectionIn {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes skillGrow {
+  from {
+    width: 0;
   }
 }
