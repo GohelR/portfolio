@@ -1,325 +1,335 @@
-import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import HeroParticles from './components/HeroParticles'
+import HoloCoreCanvas from './components/HoloCoreCanvas'
 
-const HeroParticles = lazy(() => import('./components/HeroParticles'))
-const HoloCoreCanvas = lazy(() => import('./components/HoloCoreCanvas'))
-
-const roles = ['AI Engineer', 'Machine Learning Developer', 'Full Stack Engineer', 'AI Product Builder']
-
-const profile = {
-  name: 'Ravi Gohel',
-  subtitle:
-    'I design premium AI products with production-grade model systems, cinematic UX, and high-performance full stack architecture.',
-  location: 'Rajkot, Gujarat, India',
-  email: 'ravi.n.gohel811@gmail.com',
-  resumeUrl: 'https://drive.google.com/',
-  githubUrl: 'https://github.com/ravi-gohel',
-  linkedInUrl: 'https://linkedin.com/in/ravi-gohel',
-  image:
-    'https://images.unsplash.com/photo-1580927752452-89d86da3fa0a?auto=format&fit=crop&w=900&q=80',
-}
+const bootSteps = [
+  'Initializing Ravi AI Engine...',
+  'Loading ML Models...',
+  'Connecting Neural Systems...',
+  'Welcome, visitor.',
+]
 
 const navItems = [
-  { id: 'hero', label: 'Home' },
-  { id: 'projects', label: 'Projects' },
-  { id: 'neural-core', label: '3D Core' },
-  { id: 'activity', label: 'Activity' },
-  { id: 'skills', label: 'Skills' },
+  { id: 'core', label: 'Core' },
+  { id: 'lab', label: 'Project Lab' },
+  { id: 'metrics', label: 'Metrics' },
   { id: 'terminal', label: 'Terminal' },
   { id: 'contact', label: 'Contact' },
 ]
 
 const projects = [
   {
-    title: 'CampusMate – Smart Campus Helper Bot',
-    description: 'AI assistant for student support, smart navigation, and multi-intent conversational search.',
-    tech: ['Python', 'NLP', 'Flask', 'Streamlit'],
+    id: 'campusmate',
+    title: 'CampusMate AI Assistant',
+    description: 'Multi-intent campus intelligence layer for student navigation and support.',
+    tech: ['Python', 'Flask', 'NLP', 'Streamlit'],
+    video: 'https://cdn.coverr.co/videos/coverr-futuristic-data-center-1577/1080p.mp4',
+    architecture: ['Input Router', 'Intent Classifier', 'Knowledge Memory', 'Response Generator'],
     github: 'https://github.com/ravi-gohel/campusmate',
     demo: 'https://campusmate-demo.vercel.app/',
-    video: 'https://cdn.coverr.co/videos/coverr-working-with-a-robotic-arm-1579/1080p.mp4',
   },
   {
-    title: 'FraudShield AI – Fraud Detection Platform',
-    description: 'Real-time fraud scoring engine with anomaly detection and explainable machine learning outputs.',
-    tech: ['Machine Learning', 'Python', 'PostgreSQL'],
+    id: 'fraudshield',
+    title: 'FraudShield AI',
+    description: 'Real-time fraud scoring engine with explainable anomaly decisions.',
+    tech: ['Python', 'XGBoost', 'PostgreSQL', 'FastAPI'],
+    video: 'https://cdn.coverr.co/videos/coverr-working-with-a-robotic-arm-1579/1080p.mp4',
+    architecture: ['Event Stream', 'Feature Store', 'Risk Inference', 'Alert Pipeline'],
     github: 'https://github.com/ravi-gohel/fraudshield-ai',
     demo: 'https://fraudshield-ai-demo.vercel.app/',
-    video: 'https://cdn.coverr.co/videos/coverr-futuristic-data-center-1577/1080p.mp4',
   },
   {
-    title: 'AI Startup Survival Prediction System',
-    description: 'Predictive analytics platform to evaluate startup longevity using behavioral signals.',
-    tech: ['ML Modeling', 'Analytics', 'Flask'],
+    id: 'survival',
+    title: 'Startup Survival Prediction',
+    description: 'Behavioral signal forecasting system for startup longevity.',
+    tech: ['Scikit-learn', 'Pandas', 'Flask', 'Analytics'],
+    video: 'https://cdn.coverr.co/videos/coverr-programming-at-night-1574/1080p.mp4',
+    architecture: ['Data Ingestion', 'Feature Engineering', 'Ensemble Models', 'Insight Dashboard'],
     github: 'https://github.com/ravi-gohel/startup-survival-prediction',
     demo: 'https://startup-survival-demo.vercel.app/',
-    video: 'https://cdn.coverr.co/videos/coverr-programming-at-night-1574/1080p.mp4',
   },
 ]
 
-const skills = [
-  { name: 'Python / Data Science', level: 96 },
-  { name: 'Machine Learning Systems', level: 94 },
-  { name: 'LLM Engineering', level: 92 },
-  { name: 'React + Frontend Architecture', level: 91 },
-  { name: 'Backend APIs & MLOps', level: 89 },
-  { name: 'Product & UX Thinking', level: 90 },
+const metrics = [
+  { label: 'Projects Built', value: 8, suffix: '+' },
+  { label: 'AI Models Created', value: 12, suffix: '+' },
+  { label: 'Hackathons Participated', value: 6, suffix: '+' },
+  { label: 'Deployment Success Rate', value: 100, suffix: '%' },
 ]
 
-const featuredRepos = [
-  { name: 'campusmate', description: 'Conversational assistant for student support workflows.', stars: '46', lang: 'Python' },
-  { name: 'fraudshield-ai', description: 'Anomaly-powered real-time fraud intelligence service.', stars: '39', lang: 'Python' },
-  { name: 'startup-survival-prediction', description: 'ML forecasting product for startup health scoring.', stars: '31', lang: 'Jupyter' },
-]
-
-function TypewriterRoles() {
-  const [roleIndex, setRoleIndex] = useState(0)
-  const [typed, setTyped] = useState('')
-  const [deleting, setDeleting] = useState(false)
-
-  useEffect(() => {
-    const currentRole = roles[roleIndex]
-    const speed = deleting ? 45 : 75
-
-    const timer = setTimeout(() => {
-      if (!deleting && typed.length < currentRole.length) return setTyped(currentRole.slice(0, typed.length + 1))
-      if (deleting && typed.length > 0) return setTyped(currentRole.slice(0, typed.length - 1))
-      if (!deleting && typed.length === currentRole.length) return setTimeout(() => setDeleting(true), 1200)
-      if (deleting && typed.length === 0) {
-        setDeleting(false)
-        setRoleIndex((prev) => (prev + 1) % roles.length)
-      }
-    }, speed)
-
-    return () => clearTimeout(timer)
-  }, [typed, deleting, roleIndex])
-
-  return (
-    <p className="mt-6 text-xl font-semibold text-slate-100 md:text-3xl">
-      <span className="hero-gradient-text">{typed}</span>
-      <span className="ml-1 animate-pulse text-cyan-300">|</span>
-    </p>
-  )
+const assistantAnswers = {
+  'who is ravi':
+    'Ravi Gohel is an AI engineer focused on building production-ready intelligent products with polished UX and robust ML systems.',
+  'what projects has ravi built':
+    'Ravi has built projects like CampusMate AI Assistant, FraudShield AI, and Startup Survival Prediction with full-stack delivery.',
+  'what skills does ravi have':
+    'Ravi specializes in Python, ML systems, LLM workflows, React interfaces, FastAPI backends, and deployment architecture.',
 }
 
-function LoadingScreen() {
+function BootSequence({ onFinish }) {
+  const [visibleLines, setVisibleLines] = useState([])
+
+  useEffect(() => {
+    const timers = bootSteps.map((step, index) =>
+      setTimeout(() => {
+        setVisibleLines((prev) => [...prev, step])
+        if (index === bootSteps.length - 1) {
+          setTimeout(onFinish, 700)
+        }
+      }, index * 650),
+    )
+
+    return () => timers.forEach((timer) => clearTimeout(timer))
+  }, [onFinish])
+
   return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-[#02030a]">
-      <div className="text-center">
-        <div className="loading-ring mx-auto mb-6 h-24 w-24 rounded-full bg-gradient-to-r from-cyan-400 via-indigo-400 to-violet-500 p-[2px]">
-          <div className="h-full w-full rounded-full bg-[#02030a]" />
-        </div>
-        <p className="loader-text text-xs uppercase text-cyan-200">Initializing Neural Portfolio</p>
+    <div className="fixed inset-0 z-[150] flex items-center justify-center bg-[#02040d]">
+      <div className="w-full max-w-2xl rounded-xl border border-cyan-400/30 bg-black/55 p-6 font-mono text-cyan-300 shadow-[0_0_80px_rgba(6,182,212,0.25)]">
+        <p className="mb-4 text-xs uppercase tracking-[0.3em] text-cyan-100/70">Ravi AI OS Bootloader</p>
+        {bootSteps.map((line) => (
+          <p key={line} className={`boot-line ${visibleLines.includes(line) ? 'is-visible' : ''}`}>
+            {line}
+          </p>
+        ))}
       </div>
     </div>
   )
 }
 
-function ExternalLink({ href, className, children }) {
-  const isAnchor = href.startsWith('#')
-  return (
-    <a href={href} className={className} target={isAnchor ? undefined : '_blank'} rel={isAnchor ? undefined : 'noreferrer noopener'}>
-      {children}
-    </a>
-  )
-}
-
-function CursorSpotlight() {
-  const [position, setPosition] = useState({ x: -999, y: -999 })
+function Counter({ value, suffix }) {
+  const [count, setCount] = useState(0)
 
   useEffect(() => {
-    const update = (event) => setPosition({ x: event.clientX, y: event.clientY })
-    window.addEventListener('mousemove', update)
-    return () => window.removeEventListener('mousemove', update)
-  }, [])
+    let frame
+    let start
+
+    const run = (time) => {
+      if (!start) start = time
+      const progress = Math.min((time - start) / 1200, 1)
+      setCount(Math.floor(progress * value))
+      if (progress < 1) frame = requestAnimationFrame(run)
+    }
+
+    frame = requestAnimationFrame(run)
+    return () => cancelAnimationFrame(frame)
+  }, [value])
 
   return (
-    <>
-      <div className="pointer-events-none fixed z-[95] hidden h-10 w-10 rounded-full border border-cyan-200/60 bg-cyan-300/20 md:block" style={{ transform: `translate(${position.x - 20}px, ${position.y - 20}px)` }} />
-      <div className="pointer-events-none fixed inset-0 z-[2] hidden md:block" style={{ background: `radial-gradient(300px circle at ${position.x}px ${position.y}px, rgba(34,211,238,0.18), rgba(4,6,18,0.02) 35%, rgba(4,6,18,0.5) 60%)` }} />
-    </>
+    <span>
+      {count}
+      {suffix}
+    </span>
   )
 }
 
-function ProjectCard({ project, onOpen }) {
-  const [hovered, setHovered] = useState(false)
+function ChatAssistant() {
+  const [open, setOpen] = useState(false)
+  const [input, setInput] = useState('')
+  const [typing, setTyping] = useState(false)
+  const [messages, setMessages] = useState([
+    { role: 'ai', text: 'Hi, I am Ravi AI Assistant. Ask: “Who is Ravi?”, “What projects has Ravi built?”, or “What skills does Ravi have?”' },
+  ])
+
+  const handleAsk = (question) => {
+    if (!question.trim()) return
+    const normalized = question.toLowerCase().replace(/[?]/g, '').trim()
+    const answer = assistantAnswers[normalized] ?? 'Query understood. Ravi is currently training this knowledge module. Please try one of the sample prompts.'
+
+    setMessages((prev) => [...prev, { role: 'user', text: question }])
+    setInput('')
+    setTyping(true)
+
+    setTimeout(() => {
+      setMessages((prev) => [...prev, { role: 'ai', text: answer }])
+      setTyping(false)
+    }, 950)
+  }
 
   return (
-    <article className="project-card group glass-card glow-border overflow-hidden rounded-2xl" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
-      <div className="relative overflow-hidden">
-        <video src={project.video} className="h-52 w-full object-cover transition duration-700 group-hover:scale-110" muted loop playsInline preload="none" autoPlay={hovered} onMouseEnter={(event) => event.currentTarget.play()} onMouseLeave={(event) => event.currentTarget.pause()} />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
-      </div>
-      <div className="space-y-4 p-5">
-        <h3 className="text-lg font-semibold text-white">{project.title}</h3>
-        <p className="text-sm text-slate-300">{project.description}</p>
-        <div className="flex flex-wrap gap-2">
-          {project.tech.map((tech) => (
-            <span key={tech} className="rounded-full border border-cyan-300/30 bg-cyan-400/10 px-3 py-1 text-xs text-cyan-100">{tech}</span>
-          ))}
-        </div>
-        <div className="flex flex-wrap gap-3">
-          <ExternalLink href={project.github} className="rounded-lg border border-white/25 px-4 py-2 text-xs font-semibold transition hover:border-cyan-300 hover:text-cyan-300">GitHub</ExternalLink>
-          <ExternalLink href={project.demo} className="rounded-lg bg-gradient-to-r from-cyan-500 to-violet-500 px-4 py-2 text-xs font-semibold text-white transition hover:shadow-[0_0_22px_rgba(99,102,241,0.45)]">Live Demo</ExternalLink>
-          <button onClick={() => onOpen(project)} type="button" className="rounded-lg border border-violet-300/35 bg-violet-300/10 px-4 py-2 text-xs font-semibold text-violet-100 transition hover:shadow-[0_0_20px_rgba(167,139,250,0.4)]">Expand</button>
-        </div>
-      </div>
-    </article>
-  )
-}
-
-function ProjectModal({ project, onClose }) {
-  if (!project) return null
-
-  return (
-    <div className="fixed inset-0 z-[130] grid place-items-center bg-black/70 px-4" onClick={onClose}>
-      <div className="glass-card glow-border w-full max-w-3xl overflow-hidden rounded-2xl" onClick={(event) => event.stopPropagation()}>
-        <video src={project.video} className="h-64 w-full object-cover" autoPlay muted loop playsInline />
-        <div className="space-y-4 p-6">
-          <h3 className="text-2xl font-bold text-white">{project.title}</h3>
-          <p className="text-slate-300">{project.description}</p>
-          <div className="flex flex-wrap gap-2">
-            {project.tech.map((tech) => (
-              <span key={tech} className="rounded-full border border-cyan-300/30 bg-cyan-300/10 px-3 py-1 text-xs text-cyan-100">{tech}</span>
+    <div className="fixed bottom-5 right-5 z-[120] w-[min(360px,calc(100vw-2rem))]">
+      <button type="button" onClick={() => setOpen((prev) => !prev)} className="mb-3 w-full rounded-xl border border-cyan-300/40 bg-cyan-400/15 px-4 py-3 text-left text-sm font-semibold text-cyan-100 backdrop-blur">
+        {open ? 'Close Ravi AI Assistant' : 'Open Ravi AI Assistant'}
+      </button>
+      {open && (
+        <div className="rounded-2xl border border-cyan-400/30 bg-slate-950/90 p-4 shadow-[0_0_35px_rgba(6,182,212,0.35)]">
+          <div className="max-h-64 space-y-2 overflow-auto pr-1 text-sm">
+            {messages.map((msg, index) => (
+              <p key={`${msg.role}-${index}`} className={msg.role === 'ai' ? 'text-cyan-100' : 'text-indigo-200'}>
+                <span className="font-semibold">{msg.role === 'ai' ? 'AI' : 'You'}:</span> {msg.text}
+              </p>
             ))}
+            {typing && <p className="text-cyan-300">AI is typing<span className="typing-dots">...</span></p>}
           </div>
-          <div className="flex gap-3">
-            <ExternalLink href={project.github} className="rounded-lg border border-white/25 px-4 py-2 text-sm">GitHub</ExternalLink>
-            <ExternalLink href={project.demo} className="rounded-lg bg-gradient-to-r from-cyan-500 to-violet-500 px-4 py-2 text-sm font-semibold text-white">Live Demo</ExternalLink>
-            <button type="button" onClick={onClose} className="rounded-lg border border-rose-300/35 bg-rose-400/10 px-4 py-2 text-sm text-rose-100">Close</button>
-          </div>
+          <form
+            className="mt-3 flex gap-2"
+            onSubmit={(event) => {
+              event.preventDefault()
+              handleAsk(input)
+            }}
+          >
+            <input value={input} onChange={(event) => setInput(event.target.value)} className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-sm text-slate-100" placeholder="Ask Ravi AI..." />
+            <button type="submit" className="rounded-lg bg-gradient-to-r from-cyan-500 to-indigo-500 px-3 py-2 text-xs font-semibold">Send</button>
+          </form>
         </div>
-      </div>
-    </div>
-  )
-}
-
-function TerminalTyping() {
-  const lines = ['> initializing AI systems...', '> loading ML models...', '> Ravi Gohel portfolio ready.']
-  const [lineIdx, setLineIdx] = useState(0)
-  const [typed, setTyped] = useState('')
-
-  useEffect(() => {
-    if (lineIdx >= lines.length) return undefined
-    const line = lines[lineIdx]
-
-    const timer = setTimeout(() => {
-      if (typed.length < line.length) {
-        setTyped(line.slice(0, typed.length + 1))
-      } else {
-        setTimeout(() => {
-          setLineIdx((prev) => prev + 1)
-          setTyped('')
-        }, 450)
-      }
-    }, 45)
-
-    return () => clearTimeout(timer)
-  }, [typed, lineIdx])
-
-  return (
-    <div className="rounded-2xl border border-cyan-200/20 bg-[#060914] p-5 font-mono text-sm text-cyan-100 shadow-[0_0_30px_rgba(6,182,212,0.15)]">
-      {lines.slice(0, lineIdx).map((line) => (
-        <p key={line} className="mb-1">{line}</p>
-      ))}
-      {lineIdx < lines.length && (
-        <p>
-          {typed}
-          <span className="animate-pulse">▋</span>
-        </p>
       )}
     </div>
   )
 }
 
-function App() {
-  const [isLoading, setIsLoading] = useState(true)
-  const [selectedProject, setSelectedProject] = useState(null)
-  const heroRef = useRef(null)
-  const particles = useMemo(() => Array.from({ length: 20 }, (_, idx) => ({ id: idx, left: `${Math.random() * 100}%`, delay: Math.random() * 4, duration: 8 + Math.random() * 6 })), [])
+
+function AnimatedSection({ id, className = '', children }) {
+  const ref = useRef(null)
+  const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 2200)
-    return () => clearTimeout(timer)
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true)
+          observer.disconnect()
+        }
+      },
+      { threshold: 0.2 },
+    )
+
+    if (ref.current) observer.observe(ref.current)
+    return () => observer.disconnect()
   }, [])
 
-  if (isLoading) return <LoadingScreen />
+  return (
+    <section id={id} ref={ref} className={`${className} reveal ${visible ? 'is-visible' : ''}`}>
+      {children}
+    </section>
+  )
+}
+
+function App() {
+  const [booting, setBooting] = useState(true)
+  const [activeProject, setActiveProject] = useState(projects[0])
+  const [terminalMode, setTerminalMode] = useState(false)
+  const containerRef = useRef(null)
+
+  const onBootFinish = useCallback(() => setBooting(false), [])
+
+  const scrollTo = (id) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  const className = `app-shell ${terminalMode ? 'terminal-mode' : ''}`
+
+  const parallaxStyle = useMemo(() => ({
+    transform: terminalMode ? 'none' : 'translateY(var(--parallax-shift, 0px))',
+  }), [terminalMode])
+
+  useEffect(() => {
+    const handler = () => {
+      const top = window.scrollY * -0.08
+      if (containerRef.current) containerRef.current.style.setProperty('--parallax-shift', `${top}px`)
+    }
+    window.addEventListener('scroll', handler)
+    return () => window.removeEventListener('scroll', handler)
+  }, [])
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#03040a] text-slate-100">
-      <CursorSpotlight />
-      <div className="mesh-bg" />
-      <div className="pointer-events-none fixed inset-0 z-[1] overflow-hidden">
-        {particles.map((particle) => (
-          <span key={particle.id} className="absolute h-2 w-2 rounded-full bg-cyan-300/25 particle-rise" style={{ left: particle.left, top: '104%', animationDuration: `${particle.duration}s`, animationDelay: `${particle.delay}s` }} />
-        ))}
-      </div>
+    <div className={className} ref={containerRef}>
+      {booting && <BootSequence onFinish={onBootFinish} />}
+      <HeroParticles />
 
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/40 backdrop-blur-2xl">
-        <nav className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-4">
-          <a href="#hero" className="text-sm font-semibold tracking-[0.35em] text-cyan-300">RAVI.GOHEL</a>
-          <div className="hidden items-center gap-6 lg:flex">
+      <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/65 backdrop-blur-lg">
+        <nav className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
+          <button type="button" onClick={() => scrollTo('core')} className="text-xs tracking-[0.35em] text-cyan-200">RAVI.AI.SYSTEM</button>
+          <div className="hidden gap-4 md:flex">
             {navItems.map((item) => (
-              <a key={item.id} href={`#${item.id}`} className="text-sm text-slate-200 transition duration-300 hover:text-cyan-300 hover:drop-shadow-[0_0_10px_rgba(34,211,238,0.9)]">{item.label}</a>
+              <button key={item.id} type="button" onClick={() => scrollTo(item.id)} className="text-sm text-slate-300 transition hover:text-cyan-200">
+                {item.label}
+              </button>
             ))}
           </div>
-          <ExternalLink href={profile.resumeUrl} className="rounded-full border border-cyan-300/40 bg-cyan-300/10 px-4 py-2 text-xs font-medium text-cyan-300 transition hover:shadow-[0_0_22px_rgba(34,211,238,0.5)]">Resume</ExternalLink>
+          <button type="button" onClick={() => setTerminalMode((prev) => !prev)} className="rounded-full border border-cyan-300/40 px-3 py-1 text-xs text-cyan-200">
+            {terminalMode ? 'UI Mode' : 'Terminal Mode'}
+          </button>
         </nav>
       </header>
 
-      <main className="relative z-10 mx-auto flex max-w-7xl flex-col gap-24 px-6 pb-16 pt-8 md:pt-14">
-        <section id="hero" ref={heroRef} className="relative grid min-h-[95vh] items-center gap-10 lg:grid-cols-[1.2fr_0.8fr]">
-          <Suspense fallback={null}><HeroParticles /></Suspense>
-          <div className="section-entrance">
-            <p className="glass-chip">Premium AI Product Engineering</p>
-            <h1 className="mt-4 text-4xl font-black leading-tight md:text-6xl">Building future-ready AI experiences<span className="block hero-gradient-text">{profile.name}</span></h1>
-            <TypewriterRoles />
-            <p className="mt-6 max-w-xl text-slate-300">{profile.subtitle}</p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <ExternalLink href="#projects" className="energy-button rounded-xl px-6 py-3 text-sm font-semibold text-white">Explore Projects →</ExternalLink>
-              <ExternalLink href="#contact" className="rounded-xl border border-white/25 bg-white/10 px-6 py-3 text-sm font-semibold transition hover:scale-[1.03] hover:shadow-[0_0_24px_rgba(34,211,238,0.35)]">Let&apos;s Collaborate</ExternalLink>
+      <main className="relative z-10 mx-auto max-w-6xl space-y-24 px-5 py-10" style={parallaxStyle}>
+        <AnimatedSection id="core" className="grid items-center gap-8 lg:grid-cols-2">
+          <div>
+            <p className="chip">AI SYSTEM ENTRY</p>
+            <h1 className="mt-4 text-4xl font-bold leading-tight text-white md:text-6xl">Enter Ravi Gohel&apos;s Immersive AI Interface</h1>
+            <p className="mt-4 text-slate-300">A cinematic portfolio transformed into an AI operating environment with live modules, neural visuals, and intelligent interaction.</p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <button type="button" onClick={() => scrollTo('lab')} className="cta">Launch Project Lab</button>
+              <button type="button" onClick={() => scrollTo('terminal')} className="ghost-btn">Open Terminal</button>
             </div>
           </div>
+          <HoloCoreCanvas />
+        </AnimatedSection>
 
-          <div className="section-entrance mx-auto w-full max-w-sm"><div className="profile-ring p-[2px]"><div className="rounded-full bg-slate-950/70 p-3 backdrop-blur-2xl"><img src={profile.image} alt="Ravi Gohel" className="aspect-square w-full rounded-full object-cover" loading="lazy" /></div></div></div>
-          <a href="#projects" className="absolute bottom-6 left-1/2 -translate-x-1/2 text-cyan-300 animate-bounce">Scroll ↓</a>
-        </section>
-
-        <section id="projects" className="section-entrance space-y-6">
-          <h2 className="section-title">Next-Gen Project Showcase</h2>
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">{projects.map((project) => (<ProjectCard key={project.title} project={project} onOpen={setSelectedProject} />))}</div>
-        </section>
-
-        <section id="neural-core" className="section-entrance space-y-6">
-          <h2 className="section-title">Interactive Neural Core</h2>
-          <div className="glass-card glow-border overflow-hidden rounded-3xl p-2"><Suspense fallback={<div className="grid h-[360px] place-items-center text-cyan-200">Loading 3D core...</div>}><HoloCoreCanvas /></Suspense></div>
-        </section>
-
-        <section id="activity" className="section-entrance space-y-6">
-          <h2 className="section-title">Live GitHub Activity</h2>
-          <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-            <div className="glass-card glow-border rounded-2xl p-4"><img loading="lazy" src="https://github-readme-stats.vercel.app/api?username=ravi-gohel&show_icons=true&theme=tokyonight&hide_border=true" alt="GitHub stats" className="w-full rounded-xl" /></div>
-            <div className="glass-card glow-border rounded-2xl p-4"><img loading="lazy" src="https://github-readme-streak-stats.herokuapp.com/?user=ravi-gohel&theme=tokyonight&hide_border=true" alt="GitHub streak" className="w-full rounded-xl" /></div>
+        <AnimatedSection id="lab" className="panel">
+          <h2 className="section-title">Interactive Project Lab</h2>
+          <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_1.4fr]">
+            <div className="space-y-3">
+              {projects.map((project) => (
+                <button key={project.id} type="button" onClick={() => setActiveProject(project)} className={`project-tab ${activeProject.id === project.id ? 'active' : ''}`}>
+                  <p className="font-semibold text-slate-100">{project.title}</p>
+                  <p className="mt-1 text-xs text-slate-400">{project.description}</p>
+                </button>
+              ))}
+            </div>
+            <article className="module-card">
+              <video src={activeProject.video} autoPlay loop muted playsInline className="h-52 w-full rounded-xl object-cover" />
+              <h3 className="mt-4 text-2xl font-semibold text-white">{activeProject.title}</h3>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {activeProject.tech.map((item) => (
+                  <span key={item} className="tag">{item}</span>
+                ))}
+              </div>
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                {activeProject.architecture.map((node) => (
+                  <div key={node} className="arch-node">{node}</div>
+                ))}
+              </div>
+              <div className="mt-5 flex gap-3">
+                <a className="ghost-btn" href={activeProject.github} target="_blank" rel="noreferrer">GitHub</a>
+                <a className="cta" href={activeProject.demo} target="_blank" rel="noreferrer">Live Demo</a>
+              </div>
+            </article>
           </div>
-          <div className="glass-card glow-border rounded-2xl p-4"><img loading="lazy" src="https://ghchart.rshah.org/22d3ee/ravi-gohel" alt="GitHub contribution graph" className="w-full rounded-xl bg-slate-950/40 p-2" /></div>
-          <div className="grid gap-4 md:grid-cols-3">{featuredRepos.map((repo) => (<article key={repo.name} className="glass-card repo-card rounded-2xl p-4"><p className="text-xs uppercase tracking-[0.2em] text-cyan-300">{repo.lang}</p><h3 className="mt-2 text-lg font-semibold text-white">{repo.name}</h3><p className="mt-2 text-sm text-slate-300">{repo.description}</p><p className="mt-3 text-xs text-amber-300">★ {repo.stars}</p></article>))}</div>
-        </section>
+        </AnimatedSection>
 
-        <section id="skills" className="section-entrance space-y-6">
-          <h2 className="section-title">Skill Systems</h2>
-          <div className="grid gap-4">{skills.map((skill) => (<div key={skill.name} className="glass-card rounded-2xl p-4"><div className="mb-2 flex items-center justify-between text-sm"><span className="font-semibold text-white">{skill.name}</span><span className="text-cyan-300">{skill.level}%</span></div><div className="h-2 rounded-full bg-slate-700/50"><div className="skill-fill h-2 rounded-full bg-gradient-to-r from-cyan-400 via-indigo-400 to-violet-400" style={{ width: `${skill.level}%` }} /></div></div>))}</div>
-        </section>
-
-        <section id="terminal" className="section-entrance space-y-6"><h2 className="section-title">AI Terminal</h2><TerminalTyping /></section>
-
-        <section id="contact" className="section-entrance glass-card glow-border rounded-2xl p-6">
-          <h2 className="section-title">Contact</h2>
-          <div className="mt-6 grid gap-6 md:grid-cols-2">
-            <div className="space-y-3 text-slate-300"><p>✉️ {profile.email}</p><p>📍 {profile.location}</p><div className="pt-2"><ExternalLink href={`mailto:${profile.email}`} className="mr-3 inline-flex items-center gap-2 rounded-lg border border-cyan-300/30 px-4 py-2 text-cyan-200 transition hover:shadow-[0_0_18px_rgba(34,211,238,0.45)]">🚀 Email Me</ExternalLink></div><div className="flex gap-4 pt-2 text-sm"><ExternalLink href={profile.githubUrl} className="text-cyan-300 transition hover:scale-110 hover:text-cyan-200">GitHub</ExternalLink><ExternalLink href={profile.linkedInUrl} className="text-cyan-300 transition hover:scale-110 hover:text-cyan-200">LinkedIn</ExternalLink></div></div>
-            <form className="grid gap-3" onSubmit={(event) => event.preventDefault()}><input className="contact-input" placeholder="Your Name" /><input className="contact-input" placeholder="Your Email" type="email" /><textarea className="contact-input min-h-28" placeholder="Your Message" /><button type="submit" className="rounded-lg bg-gradient-to-r from-cyan-500 to-violet-500 px-5 py-3 text-sm font-semibold text-white transition hover:shadow-[0_0_24px_rgba(6,182,212,0.55)]">Send Message</button></form>
+        <AnimatedSection id="metrics" className="panel">
+          <h2 className="section-title">Live AI Metrics Dashboard</h2>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {metrics.map((metric) => (
+              <div key={metric.label} className="metric-card">
+                <p className="text-3xl font-bold text-cyan-200">
+                  <Counter value={metric.value} suffix={metric.suffix} />
+                </p>
+                <p className="mt-2 text-sm text-slate-300">{metric.label}</p>
+              </div>
+            ))}
           </div>
-        </section>
+        </AnimatedSection>
+
+        <AnimatedSection id="terminal" className="panel font-mono">
+          <h2 className="section-title">AI Terminal Mode</h2>
+          <div className="terminal-window mt-4">
+            <p>&gt; boot --ravi-ai --interactive</p>
+            <p>&gt; modules loaded: project-lab, assistant, metrics, neural-core</p>
+            <p>&gt; status: <span className="text-emerald-300">ONLINE</span></p>
+            <p>&gt; tip: use the top-right toggle to switch complete UI into terminal styling.</p>
+          </div>
+        </AnimatedSection>
+
+        <AnimatedSection id="contact" className="panel">
+          <h2 className="section-title">Connect to Ravi</h2>
+          <p className="mt-3 text-slate-300">Email: ravi.n.gohel811@gmail.com</p>
+          <p className="text-slate-300">GitHub: github.com/ravi-gohel</p>
+          <p className="text-slate-300">LinkedIn: linkedin.com/in/ravi-gohel</p>
+        </AnimatedSection>
       </main>
 
-      <ProjectModal project={selectedProject} onClose={() => setSelectedProject(null)} />
+      <ChatAssistant />
     </div>
   )
 }
