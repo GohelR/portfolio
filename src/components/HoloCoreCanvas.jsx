@@ -1,22 +1,22 @@
 import { useEffect, useRef } from 'react'
 
-function HoloCoreCanvas() {
+export default function HoloCoreCanvas() {
   const canvasRef = useRef(null)
 
   useEffect(() => {
     const canvas = canvasRef.current
-    if (!canvas) return undefined
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return undefined
+    const ctx = canvas?.getContext('2d')
+    if (!canvas || !ctx) return undefined
 
-    let raf
-    let t = 0
     const mouse = { x: 0, y: 0 }
+    let raf = 0
+    let t = 0
 
     const resize = () => {
-      canvas.width = canvas.clientWidth * window.devicePixelRatio
-      canvas.height = canvas.clientHeight * window.devicePixelRatio
-      ctx.setTransform(window.devicePixelRatio, 0, 0, window.devicePixelRatio, 0, 0)
+      const ratio = window.devicePixelRatio || 1
+      canvas.width = canvas.clientWidth * ratio
+      canvas.height = canvas.clientHeight * ratio
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0)
     }
 
     const onMove = (event) => {
@@ -25,64 +25,60 @@ function HoloCoreCanvas() {
       mouse.y = ((event.clientY - rect.top) / rect.height - 0.5) * 2
     }
 
-    const drawPoly = (radius, sides, offset, hue) => {
-      ctx.beginPath()
-      for (let i = 0; i <= sides; i += 1) {
-        const a = (i / sides) * Math.PI * 2 + offset
-        const x = Math.cos(a) * radius
-        const y = Math.sin(a) * radius * 0.6
-        if (i === 0) ctx.moveTo(x, y)
-        else ctx.lineTo(x, y)
-      }
-      ctx.strokeStyle = `hsla(${hue}, 100%, 70%, 0.75)`
-      ctx.lineWidth = 1.2
-      ctx.stroke()
-    }
-
-    const render = () => {
-      t += 0.014
+    const draw = () => {
+      t += 0.015
       const width = canvas.clientWidth
       const height = canvas.clientHeight
-
       ctx.clearRect(0, 0, width, height)
-      ctx.save()
-      ctx.translate(width / 2 + mouse.x * 25, height / 2 + mouse.y * 20)
 
-      for (let i = 0; i < 8; i += 1) {
-        drawPoly(36 + i * 18 + Math.sin(t + i) * 4, 6, t * (1 + i * 0.14), 180 + i * 14)
+      ctx.save()
+      ctx.translate(width / 2 + mouse.x * 18, height / 2 + mouse.y * 18)
+
+      for (let i = 0; i < 14; i += 1) {
+        const angle = t * (0.6 + i * 0.06)
+        const radius = 28 + i * 8 + Math.sin(t * 2 + i) * 2
+        const alpha = 0.2 + i * 0.04
+
+        ctx.beginPath()
+        for (let p = 0; p <= 6; p += 1) {
+          const a = (Math.PI * 2 * p) / 6 + angle
+          const x = Math.cos(a) * radius
+          const y = Math.sin(a) * radius * 0.58
+          p === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)
+        }
+        ctx.strokeStyle = `rgba(103, 232, 249, ${Math.min(alpha, 0.85)})`
+        ctx.lineWidth = 1
+        ctx.stroke()
       }
 
+      const glow = 14 + Math.sin(t * 2.5) * 3
       ctx.beginPath()
-      ctx.arc(0, 0, 12 + Math.sin(t * 2) * 2, 0, Math.PI * 2)
-      ctx.fillStyle = 'rgba(56, 189, 248, 0.75)'
-      ctx.shadowBlur = 30
-      ctx.shadowColor = 'rgba(56, 189, 248, 0.9)'
+      ctx.arc(0, 0, glow, 0, Math.PI * 2)
+      ctx.fillStyle = 'rgba(34, 211, 238, 0.8)'
+      ctx.shadowColor = 'rgba(34, 211, 238, 0.9)'
+      ctx.shadowBlur = 25
       ctx.fill()
-
       ctx.restore()
-      raf = window.requestAnimationFrame(render)
+
+      raf = requestAnimationFrame(draw)
     }
 
     resize()
-    render()
+    draw()
     window.addEventListener('resize', resize)
     canvas.addEventListener('mousemove', onMove)
 
     return () => {
-      window.cancelAnimationFrame(raf)
+      cancelAnimationFrame(raf)
       window.removeEventListener('resize', resize)
       canvas.removeEventListener('mousemove', onMove)
     }
   }, [])
 
   return (
-    <div className="relative h-[360px] rounded-3xl bg-slate-950/70">
-      <canvas ref={canvasRef} className="h-full w-full" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-4 text-center text-sm text-cyan-100/70">
-        Move cursor to interact with the holographic core
-      </div>
+    <div className="h-[380px] rounded-3xl border border-cyan-300/25 bg-slate-950/60 p-1">
+      <canvas ref={canvasRef} className="h-full w-full rounded-[1.35rem]" />
+      <p className="pointer-events-none -mt-6 text-center text-xs text-cyan-200/80">Interactive AI Core · hover to influence orbital field</p>
     </div>
   )
 }
-
-export default HoloCoreCanvas
